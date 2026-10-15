@@ -1,0 +1,36 @@
+yaml
+name: Deploy Cbox Auth Gateway
+
+on:
+  push:
+    branches: ["main"]
+  schedule:
+    - cron: '0 0 * * *' # Automatically refreshes security tokens every day at midnight
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-node: '20'
+
+      - name: Generate Secure Config
+        env:
+          CBOX_SECRET: ${{ secrets.ASYLUM_CBOX_SECRET }}
+        run: node generate.js
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: . # Deploys directory files
+          branch: gh-pages # Deploys output safely to a live tracking branch
